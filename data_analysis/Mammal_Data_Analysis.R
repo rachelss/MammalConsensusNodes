@@ -179,14 +179,16 @@ AUtestPRIiOUTXpval
 
 #this is just creating the function for the next chunk
 get_favoring_lnl_loci <- function(inputdf, signal="dLnL", m){
+  
+  #I think these are done outside the function                  
+  #inputdf <- distinct(inputdf)
+  #inputdf$V1 <- paste0(inputdf$V1, ".fasta")
+  #colnames(inputdf) <- c("locname","MonoA","MonoB","MonoX","Star")
   inputdf <- select(inputdf, locname, m, Star)
-  inputdfb <- apply(inputdf[,2:3], 1, function(x) which(x == max(x)))
-  inputdfa <- apply(inputdf[,2:3], 1, function(x) x[which(x == max(x))])
-  returndf <- as.data.frame(inputdf$locname[lapply(inputdfa, length) == 1])
-  returndf$topology <- as.numeric(unlist(inputdfb[lapply(inputdfb, length) == 1]))
-  returndf$dLnL <- as.numeric(unlist(inputdfa[lapply(inputdfa, length) == 1]))
-  colnames(returndf) <- c("locname","topology",signal)
-  returndf$topology <- factor(returndf$topology, labels = colnames(inputdf)[2:3])
+  #not sure about which is best - pos or neg - or percent better
+  inputdf2 <- inputdf %>% mutate(topology = if_else(-Star > get(m)*1.01, "Star", m),
+                               best_dLnL = if_else(-Star > get(m)*1.01, Star, get(m))) %>%  #dLnL column is named manually not as signal variable
+    select(-Star, -MonoA)                  
   return(returndf)
 }
  
